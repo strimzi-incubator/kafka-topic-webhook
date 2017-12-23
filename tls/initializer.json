@@ -1,0 +1,19 @@
+{
+   "CN": "connect-0",
+   "hosts": [
+        "kafka-topic-initializer",
+        "kafka-topic-initializer.myproject",
+        "kafka-topic-initializer.myproject.svc"
+    ],
+   "key": {
+        "algo": "rsa",
+        "size": 2048
+    },
+    "names": [
+        {
+            "C": "CZ",
+            "L": "Prague",
+            "O": "Kafka Topic Initializer"
+        }
+    ]
+}
