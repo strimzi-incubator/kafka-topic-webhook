@@ -1,5 +1,7 @@
 package cz.scholz.kafka.topicinitializer;
 
+import io.kubernetes.client.JSON;
+import io.kubernetes.client.models.V1Pod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
@@ -7,6 +9,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.PemKeyCertOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
@@ -84,15 +87,32 @@ public class TopicWebhook extends AbstractVerticle {
     private void handleRequest(RoutingContext routingContext) {
         log.info("Received {} request on {} with body {}", routingContext.request().method().name(), routingContext.request().absoluteURI(), routingContext.getBodyAsString());
 
-        //new JSON().deserialize(routingContext.getBodyAsString(), V1alpha1Admission)
+        JsonObject reviewReq = routingContext.getBodyAsJson();
+        if ("AdmissionReview".equals(reviewReq.getString("kind"))) {
+            JsonObject object = reviewReq.getJsonObject("spec").getJsonObject("object");
+            V1Pod pod = new JSON().deserialize(object.toString(), V1Pod.class);
+            JsonObject responseBody = createAdmissionReviewResult(admit(pod));
+            log.info("Responding with body {}", responseBody.toString());
+            routingContext.response().setStatusCode(HttpResponseStatus.OK.code()).putHeader("content-type", "application/json; charset=utf-8").end(responseBody.toString());
+        }
+        else {
+            log.error("Kind is not AdmissionReview but {}", reviewReq.getString("kind"));
+            routingContext.response().setStatusCode(HttpResponseStatus.BAD_REQUEST.code()).setStatusMessage("Received unexpected request!").end();
 
-        routingContext.response().setStatusCode(HttpResponseStatus.NOT_IMPLEMENTED.code()).end();
+        }
     }
 
-    private void admit() {
-        //log.info("Received {} request on {} with body {}", routingContext.request().method().name(), routingContext.request().absoluteURI(), routingContext.getBodyAsString());
+    private JsonObject admit(V1Pod pod) {
+        //log.info("Admitting pod {} ({})", pod.getMetadata().getName(), pod);
+        return new JsonObject().put("allowed", true);
+    }
 
+    private JsonObject createAdmissionReviewResult(JsonObject status) {
+        JsonObject result = new JsonObject();
+        result.put("kind", "AdmissionReview");
+        result.put("apiVersion", "admission.k8s.io/v1alpha1");
+        result.put("status", status);
 
-        //routingContext.response().setStatusCode(HttpResponseStatus.NOT_IMPLEMENTED.code()).end();
+        return result;
     }
 }
