@@ -1,7 +1,5 @@
 package cz.scholz.kafka.topicinitializer;
 
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.models.V1Pod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
@@ -9,6 +7,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.PemKeyCertOptions;
 import io.vertx.ext.web.Router;
@@ -31,6 +30,9 @@ public class TopicWebhook extends AbstractVerticle {
         log.info("Creating Kafka Topic Initializer (KTI) controller");
     }
 
+    /*
+    Start the verticle
+     */
     @Override
     public void start(Future<Void> start) {
         log.info("Starting KTI controller");
@@ -46,6 +48,9 @@ public class TopicWebhook extends AbstractVerticle {
         });
     }
 
+    /*
+    Create and start HTTP server
+     */
     private void startHttpServer(Handler<AsyncResult<Void>> resultHandler) {
         Router router = configureRouter();
 
@@ -67,6 +72,10 @@ public class TopicWebhook extends AbstractVerticle {
                 });
     }
 
+    /*
+    Configure SSL for HTTP server with key from resources
+    TODO: Pass the key as ConfigMap / Env. variable
+     */
     private void setSsl(HttpServerOptions httpServerOptions) {
         httpServerOptions.setSsl(true);
 
@@ -76,6 +85,9 @@ public class TopicWebhook extends AbstractVerticle {
         httpServerOptions.setPemKeyCertOptions(pemKeyCertOptions);
     }
 
+    /*
+    Setup Vert.x router (just a single route)
+     */
     private Router configureRouter() {
         Router router = Router.router(vertx);
         router.route().handler(BodyHandler.create());
@@ -84,13 +96,15 @@ public class TopicWebhook extends AbstractVerticle {
         return router;
     }
 
+    /*
+    Triggered by incomming requests
+     */
     private void handleRequest(RoutingContext routingContext) {
         log.info("Received {} request on {} with body {}", routingContext.request().method().name(), routingContext.request().absoluteURI(), routingContext.getBodyAsString());
 
         JsonObject reviewReq = routingContext.getBodyAsJson();
         if ("AdmissionReview".equals(reviewReq.getString("kind"))) {
-            JsonObject object = reviewReq.getJsonObject("spec").getJsonObject("object");
-            V1Pod pod = new JSON().deserialize(object.toString(), V1Pod.class);
+            JsonObject pod = reviewReq.getJsonObject("spec").getJsonObject("object");
             JsonObject responseBody = createAdmissionReviewResult(admit(pod));
             log.info("Responding with body {}", responseBody.toString());
             routingContext.response().setStatusCode(HttpResponseStatus.OK.code()).putHeader("content-type", "application/json; charset=utf-8").end(responseBody.toString());
@@ -102,11 +116,56 @@ public class TopicWebhook extends AbstractVerticle {
         }
     }
 
-    private JsonObject admit(V1Pod pod) {
-        //log.info("Admitting pod {} ({})", pod.getMetadata().getName(), pod);
-        return new JsonObject().put("allowed", true);
+    /*
+    Decide whether the Pod should be admitted or not
+     */
+    private JsonObject admit(JsonObject pod) {
+        log.info("Admitting pod {} ({})", pod.getString("generateName"), pod);
+
+        JsonObject annotations = pod.getJsonObject("annotations", new JsonObject());
+
+        if (annotations.containsKey("topic-initializer.kafka.scholz.cz/topics")) {
+            Boolean allowed = true;
+            String status = null;
+
+            String topicAnnotation = annotations.getString("topic-initializer.kafka.scholz.cz/topics");
+            JsonArray topics = new JsonArray(topicAnnotation);
+
+            for (Object topic : topics.getList()) {
+                String topicName = (String)topic;
+                log.info("Pod {} requires topic {}", pod.getString("generateName"), topicName);
+            }
+
+            return createReviewStatus(allowed, status);
+        }
+        else {
+            log.info("Pod {} doesn't contain any relevant annotation and will be allowed", pod.getString("generateName"));
+            return createReviewStatus(true);
+        }
     }
 
+    /*
+    Generate review status (without message)
+     */
+    private JsonObject createReviewStatus(Boolean allowed) {
+        return createReviewStatus(allowed, null);
+    }
+
+    /*
+    Generate review status (with message)
+     */
+    private JsonObject createReviewStatus(Boolean allowed, String status) {
+        if (status != null) {
+            return new JsonObject().put("allowed", allowed).put("status", status);
+        }
+        else {
+            return new JsonObject().put("allowed", allowed);
+        }
+    }
+
+    /*
+    Generate ReviewResult based on status passed as parameter
+     */
     private JsonObject createAdmissionReviewResult(JsonObject status) {
         JsonObject result = new JsonObject();
         result.put("kind", "AdmissionReview");
