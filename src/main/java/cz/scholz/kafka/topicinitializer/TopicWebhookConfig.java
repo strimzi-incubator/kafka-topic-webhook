@@ -1,12 +1,19 @@
 package cz.scholz.kafka.topicinitializer;
 
 public class TopicWebhookConfig {
-    public TopicWebhookConfig() {
+    private final String zookeeper;
+
+    public TopicWebhookConfig(String zookeeper) {
+        this.zookeeper = zookeeper;
     }
 
     public static TopicWebhookConfig fromEnv() {
-        //String namespace = System.getenv("BARNABAS_CONTROLLER_NAMESPACE");
+        String zookeeper = System.getenv("ZOOKEEPER_URL");
 
-        return new TopicWebhookConfig();
+        return new TopicWebhookConfig(zookeeper);
+    }
+
+    public String getZookeeper() {
+        return zookeeper;
     }
 }

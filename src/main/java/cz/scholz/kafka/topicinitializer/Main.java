@@ -10,7 +10,7 @@ public class Main {
     public static void main(String args[]) {
         try {
             Vertx vertx = Vertx.vertx();
-            vertx.deployVerticle(new TopicWebhook(new TopicWebhookConfig()), res -> {
+            vertx.deployVerticle(new TopicWebhook(TopicWebhookConfig.fromEnv()), res -> {
                 if (res.failed()) {
                     log.error("Failed to start the verticle", res.cause());
                     System.exit(1);
