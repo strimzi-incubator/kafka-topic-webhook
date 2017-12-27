@@ -135,47 +135,17 @@ public class TopicWebhook extends AbstractVerticle {
         JsonObject annotations = pod.getJsonObject("annotations", new JsonObject());
 
         if (annotations.containsKey("topic-initializer.kafka.scholz.cz/topics")) {
-            List<Future> topicFutures = new ArrayList<Future>();
+            List<Future> topicFutures = new ArrayList<>();
 
             String topicAnnotation = annotations.getString("topic-initializer.kafka.scholz.cz/topics");
             JsonArray topics = new JsonArray(topicAnnotation);
 
             for (Object topic : topics.getList()) {
-                AdminUtils admin = AdminUtils.create(vertx, zookeeper);
-
                 String topicName = (String)topic;
-
                 Future completion = Future.future();
                 topicFutures.add(completion);
-
                 log.info("Pod {} requires topic {}", pod.getString("generateName"), topicName);
-
-                admin.topicExists(topicName, res -> {
-                    if (res.succeeded()) {
-                        if (res.result() == true) {
-                            log.info("Topic {} already exists", topicName);
-                            completion.succeeded();
-                        }
-                        else {
-                            log.info("Topic {} doesn't exists", topicName);
-
-                            admin.createTopic(topicName, 1, 1, res2 -> {
-                                if (res2.succeeded()) {
-                                    log.info("Topic {} created", topicName);
-                                    completion.succeeded();
-                                }
-                                else {
-                                    log.error("Failed to create topic " + topicName, res2.cause());
-                                    completion.fail("Failed to create topic " + topicName + ". ");
-                                }
-                            });
-                        }
-                    }
-                    else {
-                        log.error("Failed to query topic " + topicName, res.cause());
-                        completion.fail("Failed to query topic " + topicName + ". ");
-                    }
-                });
+                handleTopic(topicName, completion.completer());
             }
 
             CompositeFuture.all(topicFutures).setHandler(res -> {
@@ -184,17 +154,8 @@ public class TopicWebhook extends AbstractVerticle {
                    handler.handle(Future.succeededFuture(createAdmissionReviewResult(true, null)));
                }
                else {
-                   log.error("Some topic subfutures failed");
-                   CompositeFuture allResults = res.result();
-
-                   String statusMessage = "";
-
-                   for (int i = 0; i < allResults.size(); i++) {
-                       if (allResults.failed(i)) {
-                           statusMessage += allResults.cause(i).getMessage();
-                       }
-                   }
-
+                   String statusMessage = "Rejected by Kafka Topic Initializer. See logs for more details.";
+                   log.error("Some topic subfutures failed. Rejecting admission with error message '{}'.", statusMessage);
                    handler.handle(Future.succeededFuture(createAdmissionReviewResult(false, statusMessage)));
                }
             });
@@ -207,10 +168,48 @@ public class TopicWebhook extends AbstractVerticle {
     }
 
     /*
+    Handles the individual topic
+     */
+    private void handleTopic(String topic, Handler<AsyncResult<Void>> handler) {
+        AdminUtils admin = AdminUtils.create(vertx, zookeeper);
+
+        admin.topicExists(topic, res -> {
+            if (res.succeeded()) {
+                if (res.result() == true) {
+                    log.info("Topic {} already exists", topic);
+                    handler.handle(Future.succeededFuture());
+                }
+                else {
+                    log.info("Topic {} doesn't exists", topic);
+
+                    admin.createTopic(topic, 1, 1, res2 -> {
+                        if (res2.succeeded()) {
+                            log.info("Topic {} created", topic);
+                            handler.handle(Future.succeededFuture());
+                        }
+                        else {
+                            log.error("Failed to create topic " + topic, res2.cause());
+                            handler.handle(Future.failedFuture("Failed to create topic " + topic + ". "));
+                        }
+                    });
+                }
+            }
+            else {
+                log.error("Failed to query topic " + topic, res.cause());
+                handler.handle(Future.failedFuture("Failed to query topic " + topic + ". "));
+            }
+        });
+    }
+
+    /*
     Generate review status (with message)
      */
-    private JsonObject createReviewStatus(Boolean allowed, String status) {
-        if (status != null) {
+    private JsonObject createReviewStatus(Boolean allowed, String statusMessage) {
+        if (statusMessage != null) {
+            JsonObject status = new JsonObject()
+                    .put("status", "Failure")
+                    .put("message", statusMessage)
+                    .put("reason", statusMessage);
             return new JsonObject().put("allowed", allowed).put("status", status);
         }
         else {
