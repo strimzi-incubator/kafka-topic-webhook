@@ -83,4 +83,9 @@ be created even when Kafka topics from their annotation do not exist.
 
 **Can the annotation be set on other resources such as Deployments, Jobs or StatefulSets?**
 
-No, currently on Pods are supported.  
+No, currently on Pods are supported.
+
+**Why do you use Webhook and not Initializer?**
+
+The webhook is a lot easier to implement and it also seems to be the way which future Kubernetes versions will use. 
+Since we don't modify the actuall Pod, we do not need the Initializer and can do it with Webhook only.
