@@ -30,6 +30,8 @@ import org.slf4j.LoggerFactory;
 public class TopicWebhook extends AbstractVerticle {
     private static final Logger log = LoggerFactory.getLogger(TopicWebhook.class.getName());
 
+    private static final String ANNOTATION_KEY = "topic-initializer.kafka.scholz.cz/topics";
+
     private static final int DEFAULT_PARTITIONS = 1;
     private static final int DEFAULT_REPLICAS = 1;
     private static final boolean DEFAULT_ASSERT = false;
@@ -144,7 +146,7 @@ public class TopicWebhook extends AbstractVerticle {
         if (annotations.containsKey("topic-initializer.kafka.scholz.cz/topics")) {
             List<Future> topicFutures = new ArrayList<>();
 
-            String topicAnnotation = annotations.getString("topic-initializer.kafka.scholz.cz/topics");
+            String topicAnnotation = annotations.getString(ANNOTATION_KEY);
             JsonArray topics = new JsonArray(topicAnnotation);
 
             for (int i = 0; i < topics.size(); i++) {
