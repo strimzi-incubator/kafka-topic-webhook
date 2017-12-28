@@ -175,7 +175,7 @@ public class TopicWebhook extends AbstractVerticle {
     }
 
     /*
-    Handles the individual topic
+    Handles the individual topic. Decodes the topics specification and "executes" it.
      */
     private void handleTopic(JsonObject topicSpec, Handler<AsyncResult<Void>> handler) {
         String topicName = topicSpec.getString("name");
@@ -265,6 +265,10 @@ public class TopicWebhook extends AbstractVerticle {
         return result;
     }
 
+    /*
+    JsonObjetc by default converts to Map<String, Object>. This method converts it to Map<String, String> which is
+    needed for Kafka
+     */
     private Map<String, String> convertMap(Map<String, Object> source) {
         Map<String, String> target = new HashMap<>();
 
