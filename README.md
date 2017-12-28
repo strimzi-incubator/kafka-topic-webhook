@@ -14,7 +14,7 @@ automatically allowed.
 
 The `topic-initializer.kafka.scholz.cz/topics` annotation should always contain an JSON array with one or more Kafka 
 topics. The topic specification has a following format:
-```json
+```
 {"name": <string>, "create": <bool>, "assert": <bool>, "partitions": <int>, "replicas": <int>, "config": <JSON object> }
 ```
 
