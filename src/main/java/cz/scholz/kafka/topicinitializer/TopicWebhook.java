@@ -19,7 +19,9 @@ import io.vertx.kafka.admin.AdminUtils;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -27,6 +29,11 @@ import org.slf4j.LoggerFactory;
 
 public class TopicWebhook extends AbstractVerticle {
     private static final Logger log = LoggerFactory.getLogger(TopicWebhook.class.getName());
+
+    private static final int DEFAULT_PARTITIONS = 1;
+    private static final int DEFAULT_REPLICAS = 1;
+    private static final boolean DEFAULT_ASSERT = false;
+    private static final boolean DEFAULT_CREATE = true;
 
     private static final int port = 8443;
     private static String zookeeper;
@@ -140,12 +147,12 @@ public class TopicWebhook extends AbstractVerticle {
             String topicAnnotation = annotations.getString("topic-initializer.kafka.scholz.cz/topics");
             JsonArray topics = new JsonArray(topicAnnotation);
 
-            for (Object topic : topics.getList()) {
-                String topicName = (String)topic;
+            for (int i = 0; i < topics.size(); i++) {
+                JsonObject topicSpec = topics.getJsonObject(i);
                 Future completion = Future.future();
                 topicFutures.add(completion);
-                log.info("Pod {} requires topic {}", pod.getString("generateName"), topicName);
-                handleTopic(topicName, completion.completer());
+                log.info("Pod {} requires topic {}", pod.getString("generateName"), topicSpec.getString("name"));
+                handleTopic(topicSpec, completion.completer());
             }
 
             CompositeFuture.all(topicFutures).setHandler(res -> {
@@ -170,33 +177,46 @@ public class TopicWebhook extends AbstractVerticle {
     /*
     Handles the individual topic
      */
-    private void handleTopic(String topic, Handler<AsyncResult<Void>> handler) {
+    private void handleTopic(JsonObject topicSpec, Handler<AsyncResult<Void>> handler) {
+        String topicName = topicSpec.getString("name");
+        String zookeeper = topicSpec.getString("zookeeper", this.zookeeper);
+        int partitions = topicSpec.getInteger("partitions", DEFAULT_PARTITIONS);
+        int replicas = topicSpec.getInteger("replicas", DEFAULT_REPLICAS);
+        Map<String, String> config = convertMap(topicSpec.getJsonObject("config", new JsonObject()).getMap());
+        boolean assertConfig = topicSpec.getBoolean("assert", DEFAULT_ASSERT);
+        boolean create = topicSpec.getBoolean("create", DEFAULT_CREATE);
+
         AdminUtils admin = AdminUtils.create(vertx, zookeeper);
 
-        admin.topicExists(topic, res -> {
+        admin.topicExists(topicName, res -> {
             if (res.succeeded()) {
                 if (res.result() == true) {
-                    log.info("Topic {} already exists", topic);
+                    log.info("Topic {} already exists", topicName);
                     handler.handle(Future.succeededFuture());
                 }
                 else {
-                    log.info("Topic {} doesn't exists", topic);
+                    log.info("Topic {} doesn't exists", topicName);
 
-                    admin.createTopic(topic, 1, 1, res2 -> {
-                        if (res2.succeeded()) {
-                            log.info("Topic {} created", topic);
-                            handler.handle(Future.succeededFuture());
-                        }
-                        else {
-                            log.error("Failed to create topic " + topic, res2.cause());
-                            handler.handle(Future.failedFuture("Failed to create topic " + topic + ". "));
-                        }
-                    });
+                    if (create) {
+                        admin.createTopic(topicName, partitions, replicas, config, res2 -> {
+                            if (res2.succeeded()) {
+                                log.info("Topic {} created", topicName);
+                                handler.handle(Future.succeededFuture());
+                            } else {
+                                log.error("Failed to create topic " + topicName, res2.cause());
+                                handler.handle(Future.failedFuture("Failed to create topic " + topicName + ". "));
+                            }
+                        });
+                    }
+                    else {
+                        log.error("Topic " + topicName + " doesn't exist and topic creation is disabled.", res.cause());
+                        handler.handle(Future.failedFuture("Topic " + topicName + " doesn't exist and topic creation is disabled. "));
+                    }
                 }
             }
             else {
-                log.error("Failed to query topic " + topic, res.cause());
-                handler.handle(Future.failedFuture("Failed to query topic " + topic + ". "));
+                log.error("Failed to query topic " + topicName, res.cause());
+                handler.handle(Future.failedFuture("Failed to query topic " + topicName + ". "));
             }
         });
     }
@@ -234,5 +254,26 @@ public class TopicWebhook extends AbstractVerticle {
         result.put("status", createReviewStatus(allowed, status));
 
         return result;
+    }
+
+    private Map<String, String> convertMap(Map<String, Object> source) {
+        Map<String, String> target = new HashMap<>();
+
+        for (Map.Entry<String, Object> entry : source.entrySet()) {
+            if (entry.getValue() instanceof String){
+                target.put(entry.getKey(), (String)entry.getValue());
+            }
+            else if (entry.getValue() instanceof Integer) {
+                target.put(entry.getKey(), Integer.toString((Integer)entry.getValue()));
+            }
+            else if (entry.getValue() instanceof Boolean) {
+                target.put(entry.getKey(), Boolean.toString((Boolean)entry.getValue()));
+            }
+            else {
+                target.put(entry.getKey(), entry.getValue().toString());
+            }
+        }
+
+        return target;
     }
 }
