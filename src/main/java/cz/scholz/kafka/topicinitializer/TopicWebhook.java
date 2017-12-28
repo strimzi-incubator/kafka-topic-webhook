@@ -186,13 +186,22 @@ public class TopicWebhook extends AbstractVerticle {
         boolean assertConfig = topicSpec.getBoolean("assert", DEFAULT_ASSERT);
         boolean create = topicSpec.getBoolean("create", DEFAULT_CREATE);
 
+        // TODO Implement better handling of AdminUtils instance for different Zookeeper instances
         AdminUtils admin = AdminUtils.create(vertx, zookeeper);
 
         admin.topicExists(topicName, res -> {
             if (res.succeeded()) {
                 if (res.result() == true) {
                     log.info("Topic {} already exists", topicName);
-                    handler.handle(Future.succeededFuture());
+
+                    if (assertConfig)   {
+                        // TODO: Implement topic assertion
+                        log.warn("Topic {} configuration will not be asserted. Asserting configuration is currently not implemented.", topicName);
+                        handler.handle(Future.succeededFuture());
+                    }
+                    else {
+                        handler.handle(Future.succeededFuture());
+                    }
                 }
                 else {
                     log.info("Topic {} doesn't exists", topicName);
