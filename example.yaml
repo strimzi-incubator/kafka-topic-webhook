@@ -1,207 +1,22 @@
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: barnabas-cluster-controller
-  labels:
-    app: barnabas
----
-apiVersion: v1
-kind: ClusterRole
-metadata:
-  name: barnabas-cluster-controller-role
-  labels:
-    app: barnabas
-rules:
-- apiGroups:
-  - ""
-  resources:
-  - configmaps
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - pods
-  verbs:
-  - get
-  - list
-  - watch
-  - delete
-- apiGroups:
-  - ""
-  resources:
-  - services
-  verbs:
-  - get
-  - list
-  - watch
-  - create
-  - delete
-  - patch
-  - update
-- apiGroups:
-  - "extensions"
-  resources:
-  - deployments
-  - deployments/scale
-  - replicasets
-  verbs:
-  - get
-  - list
-  - watch
-  - create
-  - delete
-  - patch
-  - update
-- apiGroups:
-  - "apps"
-  resources:
-  - deployments
-  - deployments/scale
-  - deployments/status
-  - statefulsets
-  verbs:
-  - get
-  - list
-  - watch
-  - create
-  - delete
-  - patch
-  - update
----
-apiVersion: v1
-kind: RoleBinding
-metadata:
-  name: barnabas-cluster-controller-binding
-  labels:
-    app: barnabas
-subjects:
-  - kind: ServiceAccount
-    name: barnabas-cluster-controller
-roleRef:
-  kind: ClusterRole
-  name: barnabas-cluster-controller-role
-  apiGroup: v1
----
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: barnabas-cluster-controller
+  name: kafka-consumer
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        name: barnabas-cluster-controller
+      annotations:
+        topic-initializer.kafka.scholz.cz/topics: "[ {\"name\": \"topicX\", \"create\": true, \"assert\": false, \"partitions\": 3, \"replicas\": 3, \"config\": { \"cleanup.policy\": \"compact\" } } ]"
     spec:
-      serviceAccountName: barnabas-cluster-controller
       containers:
-        - name: barnabas-cluster-controller
-          image: enmasseproject/barnabas-cluster-controller:latest
----
-apiVersion: v1
-kind: Template
-metadata:
-  name: barnabas
-  annotations:
-    openshift.io/display-name: "Apache Kafka (Ephemeral storage)"
-    description: >-
-      This template installes Apache Zookeeper and Apache Kafka clusters. For more information
-      about using this template see https://github.com/EnMasseProject/barnabas
-      WARNING: Any data stored will be lost upon pod destruction. Only use this
-      template for testing."
-    tags: "messaging,datastore"
-    iconClass: "fa pficon-topology"
-    template.openshift.io/documentation-url: "https://github.com/EnMasseProject/barnabas"
-message: "Use 'kafka:9092' as bootstrap server in your application"
-parameters:
-- description: Number of Zookeper cluster nodes which will be deployed (odd number of nodes is recomended)
-  displayName: Number of Zookeper cluster nodes (odd number of nodes is recomended)
-  name: ZOOKEEPER_NODE_COUNT
-  required: true
-  value: "1"
-- description: Number of Kafka cluster nodes which will be deployed
-  displayName: Number of Kafka cluster nodes
-  name: KAFKA_NODE_COUNT
-  required: true
-  value: "3"
-- description: Image repository name
-  displayName: Repository Name
-  name: IMAGE_REPO_NAME
-  value: enmasseproject 
-- description: Kafka image name
-  displayName: Kafka image Name
-  name: KAFKA_IMAGE_NAME
-  value: kafka-statefulsets
-- description: Kafka image tag
-  displayName: Kafka image tag
-  name: KAFKA_IMAGE_TAG
-  value: latest
-- description: Zookeeper image name
-  displayName: Zookeeper image Name
-  name: ZOOKEEPER_IMAGE_NAME
-  value: zookeeper
-- description: Zookeeper image tag
-  displayName: Zookeeper image tag
-  name: ZOOKEEPER_IMAGE_TAG
-  value: latest
-- description: Number of seconds after the container has started before healthcheck probes are initiated.
-  displayName: Zookeeper healthcheck initial delay
-  name: ZOOKEEPER_HEALTHCHECK_DELAY
-  value: "15"
-- description: Number of seconds after which the probe times out.
-  displayName: Zookeeper healthcheck timeout
-  name: ZOOKEEPER_HEALTHCHECK_TIMEOUT
-  value: "5"
-- description: Number of seconds after the container has started before healthcheck probes are initiated.
-  displayName: Kafka healthcheck initial delay
-  name: KAFKA_HEALTHCHECK_DELAY
-  value: "15"
-- description: Number of seconds after which the probe times out.
-  displayName: Kafka healthcheck timeout
-  name: KAFKA_HEALTHCHECK_TIMEOUT
-  value: "5"
-- description: Default replication factor for newly created topics
-  displayName: Default replication factor
-  name: KAFKA_DEFAULT_REPLICATION_FACTOR
-  value: "1"
-- description: Replication factor for offsets topic
-  displayName: Offsets replication factor
-  name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
-  value: "3"
-- description: Replication factor for transactions state log topic
-  displayName: Transaction state replication factor
-  name: KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR
-  value: "3"
-- description: true to enable metric collection from Kafka
-  displayName: Kafka metrics enabled
-  name: KAFKA_METRICS_ENABLED
-  value: "true"
-- description: true to enable metric collection from Zookeeper
-  displayName: Zookeeper metrics enabled
-  name: ZOOKEEPER_METRICS_ENABLED
-  value: "true"
-objects:
-- apiVersion: v1
-  kind: ConfigMap
-  metadata:
-    name: kafka
-    labels:
-      app: barnabas
-      type: deployment
-      kind: kafka
-  data:
-    kafka-nodes: "${KAFKA_NODE_COUNT}"
-    kafka-image: "${IMAGE_REPO_NAME}/${KAFKA_IMAGE_NAME}:${KAFKA_IMAGE_TAG}"
-    kafka-healthcheck-delay: "${KAFKA_HEALTHCHECK_DELAY}"
-    kafka-healthcheck-timeout: "${KAFKA_HEALTHCHECK_TIMEOUT}"
-    zookeeper-nodes: "${ZOOKEEPER_NODE_COUNT}"
-    zookeeper-image: "${IMAGE_REPO_NAME}/${ZOOKEEPER_IMAGE_NAME}:${ZOOKEEPER_IMAGE_TAG}"
-    zookeeper-healthcheck-delay: "${ZOOKEEPER_HEALTHCHECK_DELAY}"
-    zookeeper-healthcheck-timeout: "${ZOOKEEPER_HEALTHCHECK_TIMEOUT}"
-    KAFKA_DEFAULT_REPLICATION_FACTOR: "${KAFKA_DEFAULT_REPLICATION_FACTOR}"
-    KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "${KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR}"
-    KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: "${KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR}"
+      - name: kafka-consumer
+        image: scholzj/kafka-consumer:latest
+        env:
+          - name: BOOTSTRAP_SERVERS
+            value: kafka:9092
+          - name: TOPIC
+            value: topicX
+          - name: GROUP_ID
+            value: my-kafka-consumer
