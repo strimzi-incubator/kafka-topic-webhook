@@ -49,10 +49,11 @@ spec:
       annotations:
         topic-initializer.kafka.scholz.cz/topics: "[ {\"name\": \"topicX\", \"create\": true, \"assert\": false, \"partitions\": 3, \"replicas\": 3, \"config\": { \"cleanup.policy\": \"compact\" } }, {\"name\": \"topicY\", \"create\": true, \"assert\": false } ]"
     spec:
-      containers:
-      - name: consumer
-        image: my-repository/kafka-consumer:latest
+      ...
+      ...
 ```
+
+*Full example can be found in [`example.yaml`](example.yaml) file.*
 
 ## Supported versions
 
