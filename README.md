@@ -57,16 +57,37 @@ spec:
 
 ## Installation
 
+### OpenShift
 
+On OpenShift the webhook is by default installed into `myproject` project and requires *admin* privileges (the 
+`ExternalAdmissionHookConfiguration` installation requires the admin user). To install it, run:
+```
+oc apply -f openshift.yaml
+```  
 
-## Examples
+### Kubernetes
 
+On Kubernetes the webhook is by default installed into `default` namespace and requires *admin* privileges (the 
+`ExternalAdmissionHookConfiguration` installation requires them). To install it, run:
+```
+kubectl apply -f kubernetes.yaml
+```  
 
+### Installing into different namespace
 
-## Supported Kubernetes and OpenShift versions
+If you want to install it into different namespace / project, you have to change `tls/webhook.json` and `openshift.yaml` to change 
+the namespace and the URL for the SSL certificates, regenerate the certificates using `make gen_certs` and rebuild the 
+Docker image using `make all`. This applies to both Kubernetes as well as OpenShift.
+
+### Supported Kubernetes and OpenShift versions
 
 Dynamic Admission Control is supported since Kubernetes 1.7 and OpenShift 3.7. Depending on your Kubernets / OpenShift 
 cluster installation, you might need to enable it manually.
+
+## Examples
+
+To test the webhook, you can deploy the [`example-consumer.yaml`](example-consumer.yaml) and [`example-producer.yaml`](example-producer.yaml) 
+which will trigger the topic creation and send / receive messages to this topic. The messages can be seen in their logs.
 
 ## TODO
 
