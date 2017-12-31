@@ -143,7 +143,7 @@ public class TopicWebhook extends AbstractVerticle {
 
         JsonObject annotations = pod.getJsonObject("annotations", new JsonObject());
 
-        if (annotations.containsKey("topic-initializer.kafka.scholz.cz/topics")) {
+        if (annotations.containsKey(ANNOTATION_KEY)) {
             List<Future> topicFutures = new ArrayList<>();
 
             String topicAnnotation = annotations.getString(ANNOTATION_KEY);

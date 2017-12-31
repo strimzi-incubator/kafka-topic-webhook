@@ -4,7 +4,7 @@ Kafka Topic Admission Webhook allows managing Kafka topics through annotations s
 can be annotated with annotation `topic-webhook.kafka.scholz.cz/topics` containing a description of topics used by 
 given Pod. When creating the Pod, the webhook will create the required topics or fail the creation of the Pod.
 
-The initializer is using [*Dynamic Admission Control* feature](https://v1-7.docs.kubernetes.io/docs/admin/extensible-admission-controllers/#external-admission-webhooks) of Kubernetes / OpenShift. 
+The webhook is using [*Dynamic Admission Control* feature](https://v1-7.docs.kubernetes.io/docs/admin/extensible-admission-controllers/#external-admission-webhooks) of Kubernetes / OpenShift. 
 It deployes a simple HTTP server which implements the Admission Review webhook. This webhook is called every time when 
 a new Pod is being created. It checks the `topic-webhook.kafka.scholz.cz/topics` annotation and if it is present it 
 will evaluate it and either allow or reject the creation of the Pod. All Pods without the annotation will be 
@@ -74,14 +74,14 @@ cluster installation, you might need to enable it manually.
 
 ## FAQ
 
-**Does the initializer constantly monitor the Kafka topics?**
+**Does the webhook constantly monitor the Kafka topics?**
 
-No. The initializer is triggered only when a Pod with the right annotation is triggered. When the topic is deleted while 
-the Pod is running, initializer will not know or care about it.
+No. The webhook is triggered only when a Pod with the right annotation is triggered. When the topic is deleted while 
+the Pod is running, webhook will not know or care about it.
 
 **What happens when the webhook controller is not running?** 
 
-The initializer is registered as Admission Control webhook. The webhook configuration in Kubernetes / OpenShift has a 
+The webhook is registered as Admission Control webhook. The webhook configuration in Kubernetes / OpenShift has a 
 configuration field `failurePolicy` which can have either value `Fail` or `Ignore`. 
 
 When set to `Fail`, Pod admission will fail when the webhook controller doesn't run. This will affect all pods which 
@@ -94,7 +94,7 @@ be created even when Kafka topics from their annotation do not exist.
 
 No, currently on Pods are supported.
 
-**Why do you use Webhook and not Initializer?**
+**Why do you use webhook and not Initializer?**
 
 The webhook is a lot easier to implement and it also seems to be the way which future Kubernetes versions will use. 
 Since we don't modify the actuall Pod, we do not need the Initializer and can do it with Webhook only.
