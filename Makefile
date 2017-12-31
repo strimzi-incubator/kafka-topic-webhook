@@ -9,6 +9,7 @@ gen_certs:
 	cfssl gencert -ca tls/ca.pem -ca-key tls/ca-key.pem tls/webhook.json | cfssljson -bare tls/webhook
 	mv tls/webhook.pem src/main/resources/webhook.pem
 	mv tls/webhook-key.pem src/main/resources/webhook-key.pem
+	sed -i '' "s/.*caBundle.*/    caBundle: $$(cat tls/ca.pem | base64 | tr -d '\n')/" deployment.yaml
 
 include ./Makefile.docker
 
