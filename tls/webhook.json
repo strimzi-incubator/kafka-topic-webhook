@@ -3,7 +3,9 @@
    "hosts": [
         "kafka-topic-webhook",
         "kafka-topic-webhook.myproject",
-        "kafka-topic-webhook.myproject.svc"
+        "kafka-topic-webhook.myproject.svc",
+        "kafka-topic-webhook.default",
+        "kafka-topic-webhook.default.svc"
     ],
    "key": {
         "algo": "rsa",
