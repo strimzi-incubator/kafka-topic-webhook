@@ -90,3 +90,8 @@ No, currently on Pods are supported.
 
 The webhook is a lot easier to implement and it also seems to be the way which future Kubernetes versions will use. 
 Since we don't modify the actuall Pod, we do not need the Initializer and can do it with Webhook only.
+
+**What happens with the Kafka topics once the Pods are deleted?**
+
+The webhook is triggered only when Pod is created. It is not informed about the Pods being deleted. All Kafka topics 
+created by the webhook will continue to exist and have to be removed manually.
