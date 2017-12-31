@@ -1,0 +1,19 @@
+{
+   "CN": "kafka-topic-webhook",
+   "hosts": [
+        "kafka-topic-webhook",
+        "kafka-topic-webhook.myproject",
+        "kafka-topic-webhook.myproject.svc"
+    ],
+   "key": {
+        "algo": "rsa",
+        "size": 2048
+    },
+    "names": [
+        {
+            "C": "CZ",
+            "L": "Prague",
+            "O": "Kafka Topic Webhook"
+        }
+    ]
+}

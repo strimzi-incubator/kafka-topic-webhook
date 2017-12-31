@@ -2,8 +2,8 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    name: kafka-topic-initializer
-  name: kafka-topic-initializer
+    name: kafka-topic-webhook
+  name: kafka-topic-webhook
   namespace: myproject
 spec:
   ports:
@@ -11,28 +11,28 @@ spec:
       port: 443
       targetPort: 8443
   selector:
-    name: kafka-topic-initializer
+    name: kafka-topic-webhook
   type: ClusterIP
 ---
 
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: kafka-topic-initializer
+  name: kafka-topic-webhook
   labels:
-    name: kafka-topic-initializer
+    name: kafka-topic-webhook
   namespace: myproject
 spec:
   replicas: 1
   template:
     metadata:
-      name: kafka-topic-initializer
+      name: kafka-topic-webhook
       labels:
-        name: kafka-topic-initializer
+        name: kafka-topic-webhook
     spec:
       containers:
-        - image: scholzj/kafka-topic-initializer:latest
-          name: kafka-topic-initializer
+        - image: scholzj/kafka-topic-webhook:latest
+          name: kafka-topic-webhook
           env:
             - name: ZOOKEEPER_URL
               value: kafka-zookeeper:2181
@@ -46,7 +46,7 @@ kind: ExternalAdmissionHookConfiguration
 metadata:
   name: kafka-topic-initializer
 externalAdmissionHooks:
-- name: topic-initializer.kafka.scholz.cz
+- name: topic-webhook.kafka.scholz.cz
   rules:
   - apiGroups:
     - ""
@@ -60,5 +60,5 @@ externalAdmissionHooks:
   clientConfig:
     caBundle: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURPakNDQWlLZ0F3SUJBZ0lVYU45UjVmb1dhQ0UwVDI0OVJ5RWM2Sk1STUVjd0RRWUpLb1pJaHZjTkFRRUwKQlFBd05URUxNQWtHQTFVRUJoTUNRMW94RHpBTkJnTlZCQWNUQmxCeVlXZDFaVEVWTUJNR0ExVUVDaE1NU21GcgpkV0lnVTJOb2IyeDZNQjRYRFRFM01USXlNekl4TkRZd01Gb1hEVEl5TVRJeU1qSXhORFl3TUZvd05URUxNQWtHCkExVUVCaE1DUTFveER6QU5CZ05WQkFjVEJsQnlZV2QxWlRFVk1CTUdBMVVFQ2hNTVNtRnJkV0lnVTJOb2IyeDYKTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUF4WDdZYS94T3BPQWdOZ3pOTGdwTgoyMFU0UWhWN1JBQjZZd2NBR2EzTlpVVVZlbkl2NEVrUEN5Ujc4T3dwc2drTXFKbnZiVGRDUDZiN0F6UjVrRkVICnlzdE9JUDUrd09YbFM1eG92V0NBNHh6MHAzcmFqUkJhQzU3REtHVURncW5rRkdHczdYdlhZQWpBSmRJTU9FdlYKdFNvMHRSaUtkeHZTcyt1aTR4UGhxb2I5SU1oRFZrQklDQld5NVVMWUM3VkIwZ3MxOGlRZ1VlWlZ2R0ljYnpSbApyZEZuVEhuM3ljZiszR2hnOFZkcHhRempoVlY2ak1UU3lBa2luWEdjOTMvOWZFZ0NVZlo4bVlUb2xvRjJYV1puCjRvMHIvd1ZGV3V2N0p0aUhHTTNNdlMxZmk2d2lnUm5rVm56ekducUJldnd6WWU0dFduVEQ1dmhxbmQ3d2NxaVUKSVFJREFRQUJvMEl3UURBT0JnTlZIUThCQWY4RUJBTUNBUVl3RHdZRFZSMFRBUUgvQkFVd0F3RUIvekFkQmdOVgpIUTRFRmdRVUtuQThmeTVSb1dFeDVSelNUUzVqeU5jVS8vQXdEUVlKS29aSWh2Y05BUUVMQlFBRGdnRUJBQk9BCjlMbTVDVC9tYmthR2tkTGJzR1BRdm1DUTdJOWhSUFIyY0xoenVrNENwYmZEVHZPSWtEK1VrUzUvK1I3ejZwenYKU1FraGFONE5ZYUNCTkMzOG43aVNmQ0hEemlqbExQcTUxaFd0a25DUnlDYkpHY0pWODh1VXFtNTM1UjVlZExORwo5OUtRWlplK1M2TkFMVjFQbW95M2g4UFhOVitTSDcvNU13QUppVDc1ajdldkVwc2JjQkE0Z1MrTFJkMzd3Ynp6CmpjdDdTVjZTSVRwUTRwTFVWRDQzT3JIRWZMWmo4UGwwNUd1cHlMYVRQZWdFMWltU1BCcy9DQVpXU1JTcHVhUlYKOFVQSjZWNkVET0NjcDYyWlBYVUNiS2lZZjdtTEMvNGcwN3djTHVVK1dVSU1hRDlQczk4N1c3Nmo0OUErUkphVApMOHBOV01VRFp0MjJUcC8zK21RPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
     service:
-      name: kafka-topic-initializer
+      name: kafka-topic-webhook
       namespace: myproject

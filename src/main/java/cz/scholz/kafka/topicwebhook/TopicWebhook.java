@@ -1,4 +1,4 @@
-package cz.scholz.kafka.topicinitializer;
+package cz.scholz.kafka.topicwebhook;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AbstractVerticle;
@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 public class TopicWebhook extends AbstractVerticle {
     private static final Logger log = LoggerFactory.getLogger(TopicWebhook.class.getName());
 
-    private static final String ANNOTATION_KEY = "topic-initializer.kafka.scholz.cz/topics";
+    private static final String ANNOTATION_KEY = "topic-webhook.kafka.scholz.cz/topics";
 
     private static final int DEFAULT_PARTITIONS = 1;
     private static final int DEFAULT_REPLICAS = 1;
@@ -41,7 +41,7 @@ public class TopicWebhook extends AbstractVerticle {
     private static String zookeeper;
 
     public TopicWebhook(TopicWebhookConfig config) throws Exception {
-        log.info("Creating Kafka Topic Initializer (KTI) controller");
+        log.info("Creating Kafka Topic Webhook (KTW) controller");
 
         zookeeper = config.getZookeeper();
         log.info("Using Zookeeper {}", zookeeper);
@@ -52,14 +52,14 @@ public class TopicWebhook extends AbstractVerticle {
      */
     @Override
     public void start(Future<Void> start) {
-        log.info("Starting KTI controller");
+        log.info("Starting KTW controller");
         startHttpServer(res -> {
             if (res.succeeded()) {
-                log.info("KTI controller created");
+                log.info("KTW controller created");
                 start.complete();
             }
             else {
-                log.info("KTI controller failed to start", res.cause());
+                log.info("KTW controller failed to start", res.cause());
                 start.fail(res.cause());
             }
         });
@@ -97,8 +97,8 @@ public class TopicWebhook extends AbstractVerticle {
         httpServerOptions.setSsl(true);
 
         PemKeyCertOptions pemKeyCertOptions = new PemKeyCertOptions()
-                .setKeyValue(Buffer.buffer(new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/initializer-key.pem"))).lines().collect(Collectors.joining("\n"))))
-                .setCertValue(Buffer.buffer(new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/initializer.pem"))).lines().collect(Collectors.joining("\n"))));
+                .setKeyValue(Buffer.buffer(new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/webhook-key.pem"))).lines().collect(Collectors.joining("\n"))))
+                .setCertValue(Buffer.buffer(new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/webhook.pem"))).lines().collect(Collectors.joining("\n"))));
         httpServerOptions.setPemKeyCertOptions(pemKeyCertOptions);
     }
 

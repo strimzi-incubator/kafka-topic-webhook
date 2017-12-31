@@ -8,7 +8,7 @@ spec:
     metadata:
       labels:
       annotations:
-        topic-initializer.kafka.scholz.cz/topics: "[ {\"name\": \"topicX\", \"create\": true, \"assert\": false, \"partitions\": 3, \"replicas\": 3, \"config\": { \"cleanup.policy\": \"compact\" } } ]"
+        topic-webhook.kafka.scholz.cz/topics: "[ {\"name\": \"topicX\", \"create\": true, \"assert\": false, \"partitions\": 3, \"replicas\": 3, \"config\": { \"cleanup.policy\": \"compact\" } } ]"
     spec:
       containers:
       - name: kafka-consumer

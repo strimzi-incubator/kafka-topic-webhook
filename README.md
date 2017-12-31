@@ -1,18 +1,18 @@
-# Kafka Topic Initializer for Kubernetes / OpenShift
+# Kafka Topic Admission Webhook for Kubernetes / OpenShift
 
-Kafka Topic Initializer allows managing Kafka topics through annotations set on Pods which are using these topics. Pods 
-can be annotated with annotation `topic-initializer.kafka.scholz.cz/topics` containing a description of topics used by 
-given Pod. When creating the Pod, the initializer will create the required topics or fail the creation of the Pod.
+Kafka Topic Admission Webhook allows managing Kafka topics through annotations set on Pods which are using these topics. Pods 
+can be annotated with annotation `topic-webhook.kafka.scholz.cz/topics` containing a description of topics used by 
+given Pod. When creating the Pod, the webhook will create the required topics or fail the creation of the Pod.
 
 The initializer is using [*Dynamic Admission Control* feature](https://v1-7.docs.kubernetes.io/docs/admin/extensible-admission-controllers/#external-admission-webhooks) of Kubernetes / OpenShift. 
 It deployes a simple HTTP server which implements the Admission Review webhook. This webhook is called every time when 
-a new Pod is being created. It checks the `topic-initializer.kafka.scholz.cz/topics` annotation and if it is present it 
+a new Pod is being created. It checks the `topic-webhook.kafka.scholz.cz/topics` annotation and if it is present it 
 will evaluate it and either allow or reject the creation of the Pod. All Pods without the annotation will be 
 automatically allowed. 
 
 ## Annotation format
 
-The `topic-initializer.kafka.scholz.cz/topics` annotation should always contain an JSON array with one or more Kafka 
+The `topic-webhook.kafka.scholz.cz/topics` annotation should always contain an JSON array with one or more Kafka 
 topics. The topic specification has a following format:
 ```
 {"name": <string>, "create": <bool>, "assert": <bool>, "partitions": <int>, "replicas": <int>, "config": <JSON object> }
@@ -28,7 +28,7 @@ The fields have following meaning and default values:
 | `partitions` | Number of partitions | No | `1` | `3` |
 | `replicas` | Number of replicas / replication factor | No | `1` | `3` |
 | `zookeeper` | Zookeeper address | No | Configured as part of Webhook deployment | `my-zookeeper:2181/my-kafka-cluster` |
-| `config` | Additional configuration options for the KAfka topic | No | n/a | `{ "cleanup.policy": "compact" }` |
+| `config` | Additional configuration options for the Kafka topic | No | n/a | `{ "cleanup.policy": "compact" }` |
 
 
 For example:
@@ -47,15 +47,23 @@ spec:
   template:
     metadata:
       annotations:
-        topic-initializer.kafka.scholz.cz/topics: "[ {\"name\": \"topicX\", \"create\": true, \"assert\": false, \"partitions\": 3, \"replicas\": 3, \"config\": { \"cleanup.policy\": \"compact\" } }, {\"name\": \"topicY\", \"create\": true, \"assert\": false } ]"
+        topic-webhook.kafka.scholz.cz/topics: "[ {\"name\": \"topicX\", \"create\": true, \"assert\": false, \"partitions\": 3, \"replicas\": 3, \"config\": { \"cleanup.policy\": \"compact\" } }, {\"name\": \"topicY\", \"create\": true, \"assert\": false } ]"
     spec:
       ...
       ...
 ```
 
-*Full example can be found in [`example.yaml`](example.yaml) file.*
+*Full example can be found in [`example-consumer.yaml`](example-consumer.yaml) file.*
 
-## Supported versions
+## Installation
+
+
+
+## Examples
+
+
+
+## Supported Kubernetes and OpenShift versions
 
 Dynamic Admission Control is supported since Kubernetes 1.7 and OpenShift 3.7. Depending on your Kubernets / OpenShift 
 cluster installation, you might need to enable it manually.
