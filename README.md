@@ -10,6 +10,21 @@ a new Pod is being created. It checks the `topic-webhook.kafka.scholz.cz/topics`
 will evaluate it and either allow or reject the creation of the Pod. All Pods without the annotation will be 
 automatically allowed. 
 
+<!-- TOC depthFrom:2 -->
+
+- [Annotation format](#annotation-format)
+- [Installation](#installation)
+    - [OpenShift](#openshift)
+    - [Kubernetes](#kubernetes)
+    - [Installing into different namespace / project](#installing-into-different-namespace--project)
+    - [Supported Kubernetes and OpenShift versions](#supported-kubernetes-and-openshift-versions)
+- [Examples](#examples)
+- [Comparing with other approaches](#comparing-with-other-approaches)
+- [TODO](#todo)
+- [FAQ](#faq)
+
+<!-- /TOC -->
+
 ## Annotation format
 
 The `topic-webhook.kafka.scholz.cz/topics` annotation should always contain an JSON array with one or more Kafka 
