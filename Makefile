@@ -1,6 +1,8 @@
 PROJECT_NAME=kafka-topic-webhook
 
 all: java_build docker_build docker_push
+build: java_build
+build: java_build
 clean: java_clean
 
 gen_certs:
