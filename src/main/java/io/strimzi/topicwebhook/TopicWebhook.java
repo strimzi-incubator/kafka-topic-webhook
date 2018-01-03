@@ -1,4 +1,4 @@
-package cz.scholz.kafka.topicwebhook;
+package io.strimzi.topicwebhook;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AbstractVerticle;
@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 public class TopicWebhook extends AbstractVerticle {
     private static final Logger log = LoggerFactory.getLogger(TopicWebhook.class.getName());
 
-    private static final String ANNOTATION_KEY = "topic-webhook.kafka.scholz.cz/topics";
+    private static final String ANNOTATION_KEY = "topic-webhook.kafka.strimzi.io/topics";
 
     private static final int DEFAULT_PARTITIONS = 1;
     private static final int DEFAULT_REPLICAS = 1;

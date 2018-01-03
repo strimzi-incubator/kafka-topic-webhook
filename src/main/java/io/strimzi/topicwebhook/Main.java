@@ -1,4 +1,4 @@
-package cz.scholz.kafka.topicwebhook;
+package io.strimzi.topicwebhook;
 
 import io.vertx.core.*;
 import org.slf4j.Logger;

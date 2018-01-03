@@ -13,9 +13,7 @@
     },
     "names": [
         {
-            "C": "CZ",
-            "L": "Prague",
-            "O": "Kafka Topic Webhook"
+            "O": "Strimzi Topic Webhook"
         }
     ]
 }

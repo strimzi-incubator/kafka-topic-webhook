@@ -1,12 +1,12 @@
 # Kafka Topic Admission Webhook for Kubernetes / OpenShift
 
 Kafka Topic Admission Webhook allows managing Kafka topics through annotations set on Pods which are using these topics. Pods 
-can be annotated with annotation `topic-webhook.kafka.scholz.cz/topics` containing a description of topics used by 
+can be annotated with annotation `topic-webhook.kafka.strimzi.io/topics` containing a description of topics used by 
 given Pod. When creating the Pod, the webhook will create the required topics or fail the creation of the Pod.
 
 The webhook is using [*Dynamic Admission Control* feature](https://v1-7.docs.kubernetes.io/docs/admin/extensible-admission-controllers/#external-admission-webhooks) of Kubernetes / OpenShift. 
 It will deploy a simple HTTP server which implements the Admission Review webhook. This webhook is called every time when 
-a new Pod is being created. It checks the `topic-webhook.kafka.scholz.cz/topics` annotation and if it is present it 
+a new Pod is being created. It checks the `topic-webhook.kafka.strimzi.io/topics` annotation and if it is present it 
 will evaluate it and either allow or reject the creation of the Pod. All Pods without the annotation will be 
 automatically allowed. 
 
@@ -27,7 +27,7 @@ automatically allowed.
 
 ## Annotation format
 
-The `topic-webhook.kafka.scholz.cz/topics` annotation should always contain an JSON array with one or more Kafka 
+The `topic-webhook.kafka.strimzi.io/topics` annotation should always contain an JSON array with one or more Kafka 
 topics. The topic specification has a following format:
 ```
 {"name": <string>, "create": <bool>, "assert": <bool>, "partitions": <int>, "replicas": <int>, "config": <JSON object> }
@@ -62,7 +62,7 @@ spec:
   template:
     metadata:
       annotations:
-        topic-webhook.kafka.scholz.cz/topics: "[ {\"name\": \"topicX\", \"create\": true, \"assert\": false, \"partitions\": 3, \"replicas\": 3, \"config\": { \"cleanup.policy\": \"compact\" } }, {\"name\": \"topicY\", \"create\": true, \"assert\": false } ]"
+        topic-webhook.kafka.strimzi.io/topics: "[ {\"name\": \"topicX\", \"create\": true, \"assert\": false, \"partitions\": 3, \"replicas\": 3, \"config\": { \"cleanup.policy\": \"compact\" } }, {\"name\": \"topicY\", \"create\": true, \"assert\": false } ]"
     spec:
       ...
       ...

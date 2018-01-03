@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     environment:
-      - USER: scholzj
+      - USER: strimzi
     docker:
       - image: scholzj/circleci-centos-java:latest
     steps:

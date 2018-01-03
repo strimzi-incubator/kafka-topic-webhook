@@ -1,4 +1,4 @@
-package cz.scholz.kafka.topicwebhook;
+package io.strimzi.topicwebhook;
 
 public class TopicWebhookConfig {
     private final String zookeeper;
