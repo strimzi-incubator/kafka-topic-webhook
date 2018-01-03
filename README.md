@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/strimzi/kafka-topic-webhook.svg?style=shield)](https://circleci.com/gh/strimzi/kafka-topic-webhook)
+
 # Kafka Topic Admission Webhook for Kubernetes / OpenShift
 
 Kafka Topic Admission Webhook allows managing Kafka topics through annotations set on Pods which are using these topics. Pods 
