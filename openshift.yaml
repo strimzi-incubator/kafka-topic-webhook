@@ -2,8 +2,8 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    name: kafka-topic-webhook
-  name: kafka-topic-webhook
+    name: strimzi-topic-webhook
+  name: strimzi-topic-webhook
   namespace: myproject
 spec:
   ports:
@@ -11,28 +11,28 @@ spec:
       port: 443
       targetPort: 8443
   selector:
-    name: kafka-topic-webhook
+    name: strimzi-topic-webhook
   type: ClusterIP
 ---
 
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: kafka-topic-webhook
+  name: strimzi-topic-webhook
   labels:
-    name: kafka-topic-webhook
+    name: strimzi-topic-webhook
   namespace: myproject
 spec:
   replicas: 1
   template:
     metadata:
-      name: kafka-topic-webhook
+      name: strimzi-topic-webhook
       labels:
-        name: kafka-topic-webhook
+        name: strimzi-topic-webhook
     spec:
       containers:
         - image: strimzi/kafka-topic-webhook:latest
-          name: kafka-topic-webhook
+          name: strimzi-topic-webhook
           env:
             - name: ZOOKEEPER_URL
               value: kafka-zookeeper:2181
@@ -44,7 +44,7 @@ spec:
 apiVersion: admissionregistration.k8s.io/v1alpha1
 kind: ExternalAdmissionHookConfiguration
 metadata:
-  name: kafka-topic-webhook
+  name: strimzi-topic-webhook
 externalAdmissionHooks:
 - name: topic-webhook.kafka.strimzi.io
   rules:
@@ -58,7 +58,7 @@ externalAdmissionHooks:
     - pods
   failurePolicy: Ignore
   clientConfig:
-    caBundle: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURPakNDQWlLZ0F3SUJBZ0lVTXhLTm40aFg0QXFqbVFCSkhiQmhkVjFscUYwd0RRWUpLb1pJaHZjTkFRRUwKQlFBd0l6RWhNQjhHQTFVRUNoTVlVM1J5YVcxNmFTQlViM0JwWXlCWFpXSm9iMjlySUVOQk1CNFhEVEU0TURFdwpNekl4TVRnd01Gb1hEVEl6TURFd01qSXhNVGd3TUZvd0l6RWhNQjhHQTFVRUNoTVlVM1J5YVcxNmFTQlViM0JwCll5QlhaV0pvYjI5cklFTkJNSUlCSWpBTkJna3Foa2lHOXcwQkFRRUZBQU9DQVE4QU1JSUJDZ0tDQVFFQXZwQ0QKQXQwQWFHT3JRTnJNL2VVbEdBMjVkM2lGMXZUOERBRmJLcFJvKzlyT0JTTW8vbiswSFZwUXJ4bDlSaklGdHZuWAprd1pWZHBOWXJwK0tRQWhVVDVxYnd4cDlSVFRmV2YwQ25pV1dnNU1iMHpGMDdHcWl5WlRzL0c3QjRDbjg2M3VCCjk2MzVvRVBKQmRuTWZBM0t4ZVZhcGI5NHovbHV5Wm1RckJWRHRQQkFmSGx1WGZ0NWIycDA1K0hicXNtNGxXVTEKN05LUXYwbVlTclN3THhaZEh6dVlzaTlSZ1pPZU1xNWY0eWZ3QTZaZGF3aEtWbVhrU0F5Si84SE1lZDBEbWNGNgpJeUJRUjUwQzExbnB3bUNraVJrL05tc1lkQjJGZHhzdFQ4VEFZUVlnbHlrQllhcDlzSkowQjF6TGhsbVJNTFJHCjFxbW9FTHNVYmo5UTBhbHAvUUlEQVFBQm8yWXdaREFPQmdOVkhROEJBZjhFQkFNQ0FRWXdFZ1lEVlIwVEFRSC8KQkFnd0JnRUIvd0lCQWpBZEJnTlZIUTRFRmdRVUcwZVRScWdKTFNYbGlyMml6a2Y1dWhvbUg0Z3dId1lEVlIwagpCQmd3Rm9BVUcwZVRScWdKTFNYbGlyMml6a2Y1dWhvbUg0Z3dEUVlKS29aSWh2Y05BUUVMQlFBRGdnRUJBRzQ0CmdVZ0haNDg5VUc3aWJoSXRDR2c2bTdzVVRiZjZuRE1XRTFwR0oyU2dQV3UwZTJEZUhiR3lnZk41MlN5Vkx0QWoKa0h1ck5ta3hmZ2dUcktMVldOVTdxQmJiWFdVL2pmYlI5TFFGYlZiSzVrZzZRa1gzR3NHd3oycklRejVrU2gydQpHbmZiL3V4dUNzOHZQcDJPOUZ1SENlL0xDVktwYmhyNlU1QzlHR1hwVWUxY3F5ay9nZTZleWd0S3pvVzBsY2lWCk9QZ0tlSGZaakF1R3dMRUR0QjRwTUh3TU4wR29MMmFMZjN0aTRENE9xMVdCTUFKazl0dXZQMStiTkx3WUg5Q3MKcmtMTVRTeUFLazdoalRiQXpjTThMVkVPcks5SWo3dDlCK1YzUzZocUpMSHFIRklod2psSlhUZks4b2txMTJ5dwpta2NtMEl3bUVyb2FSa3VPSFpnPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+    caBundle: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURPakNDQWlLZ0F3SUJBZ0lVSnNOeklveUNESEpYcmhDakJvM1M2elZTNnNvd0RRWUpLb1pJaHZjTkFRRUwKQlFBd0l6RWhNQjhHQTFVRUNoTVlVM1J5YVcxNmFTQlViM0JwWXlCWFpXSm9iMjlySUVOQk1CNFhEVEU0TURFdwpOekl4TVRBd01Gb1hEVEl6TURFd05qSXhNVEF3TUZvd0l6RWhNQjhHQTFVRUNoTVlVM1J5YVcxNmFTQlViM0JwCll5QlhaV0pvYjI5cklFTkJNSUlCSWpBTkJna3Foa2lHOXcwQkFRRUZBQU9DQVE4QU1JSUJDZ0tDQVFFQXRqVXkKTjgxVDMyWnJiRHNMd0lJVkJJUDRkWERRTjlRUlh0NGc4djBCTi9aTEJRM0kzYWFLa0QzSlFXSmlkVHg1aW8wSQpuTnlUSXYrTURJMXlQZHhBT2FLMUtrYndFVFg2OGxQYXJPa1dHSHVxbDg5ZTByQWxtYkc0M3Jlc1ZFaHA2UTI0CjBnd3hoTHNoQnVaQzJpUGlaY2R3VXFZV0JNTEZWTWhESi81U1JYMUJnZEd5VGd3aWZvVlpHbllKdU9DdzlXTmEKNDBCTEc4amRhdkVLNXMzTFp4NXljMU92TktyWnFnQVAzYk5XbWFtNU94VVFyU3dvdFlZbkZ6N2JEVEpPSVdvSQpDSEg2LzBnQjZoNmhHbnNqc2tNV0QyRG9zL0xUWUJUZ3RTYUJ0Vk9Vb3ZnUnYyWlNBb0YyK3htMVZtMXZaMGhZCkVaRERXUm5KOUV5YmpKYTJ5d0lEQVFBQm8yWXdaREFPQmdOVkhROEJBZjhFQkFNQ0FRWXdFZ1lEVlIwVEFRSC8KQkFnd0JnRUIvd0lCQWpBZEJnTlZIUTRFRmdRVVhXR0ErNXgrZEM4aXU1VWpseDI1NWw4Sjh1QXdId1lEVlIwagpCQmd3Rm9BVVhXR0ErNXgrZEM4aXU1VWpseDI1NWw4Sjh1QXdEUVlKS29aSWh2Y05BUUVMQlFBRGdnRUJBS2hYCjdjK2dPKy8rRERBdXpGNUhHc3NFZEsvL2xmZWVFNzBBd3lEZXR1SzU5cmo1RUhyMWd6L1Z1WVE2Skc3TkxKN3AKQ0tiK01BRnhNdVZNNnB4NkYycU9taEdEM3YrVmhtcysxRjRLWjhWTnNDck5TNDJqc0x6aVBRKzc0WHhjalVRagpiUTFPVHN6WE1IWUFhbmVKYmM4NXdPSTVDU3Q1cVhPOSt2c0wyUWJHekNKT05DdEpYTUhLZ2NsSVZmSUszV2JUCmRXOXgvRnNFNE9FWGp3V1hOZDFPWTF1UzQ2MXpDTHZWY2U5WUhJaXNOUldqMEYrODZOR3JubS9yTXhmM1VVc2kKZyttQ0t2bDNCNVdmSXVyck1vM2IrV2ZxcXZTNWk2UWhUeXhvWGFQN2w3cnNtNGxMWm0vWURhV0JQMkk3N0svQQp6OEtnZ0RJU1VCb0x5N1pyNUlvPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
     service:
-      name: kafka-topic-webhook
+      name: strimzi-topic-webhook
       namespace: myproject

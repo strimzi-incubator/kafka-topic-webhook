@@ -1,11 +1,11 @@
 {
-   "CN": "kafka-topic-webhook",
+   "CN": "strimzi-topic-webhook",
    "hosts": [
-        "kafka-topic-webhook",
-        "kafka-topic-webhook.myproject",
-        "kafka-topic-webhook.myproject.svc",
-        "kafka-topic-webhook.default",
-        "kafka-topic-webhook.default.svc"
+        "strimzi-topic-webhook",
+        "strimzi-topic-webhook.myproject",
+        "strimzi-topic-webhook.myproject.svc",
+        "strimzi-topic-webhook.default",
+        "strimzi-topic-webhook.default.svc"
     ],
    "key": {
         "algo": "rsa",
